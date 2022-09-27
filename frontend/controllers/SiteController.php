@@ -2,6 +2,7 @@
 
 namespace frontend\controllers;
 
+use frontend\models\AddMessageForm;
 use frontend\models\ResendVerificationEmailForm;
 use frontend\models\VerifyEmailForm;
 use Yii;
@@ -15,6 +16,8 @@ use frontend\models\PasswordResetRequestForm;
 use frontend\models\ResetPasswordForm;
 use frontend\models\SignupForm;
 use frontend\models\ContactForm;
+use common\models\Message;
+use yii\web\Response;
 
 /**
  * Site controller
@@ -75,7 +78,56 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $modelMessage = new Message();
+
+        return $this->render('index', [
+            'dataProvider' => $modelMessage->getMessagesList(),
+        ]);
+    }
+
+    public function actionAddMessage()
+    {
+        $model = new AddMessageForm();
+        if ($model->load(Yii::$app->request->post())) {
+            $model->created_at = time();
+//            echo '<pre>';print_r($model);die;
+            if (!$model->validate()) {
+                // Данные не прошли валидацию
+                Yii::$app->session->setFlash('error', 'Сообщение не было отправлено.');
+            } else {
+                // Данные прошли валидацию
+                $model->addMessage();
+                if (Yii::$app->request->isAjax) {
+                    $message = 'Ваше сообщение успешно отправлено. Оно появится после одобрения модератором.';
+                    Yii::$app->response->format = Response::FORMAT_JSON;
+                    $response = [
+                        'success' => true,
+                        'message' => $message
+                    ];
+                    return $response;
+                } else {
+                    // данные прошли валидацию, отмечаем этот факт
+                    Yii::$app->session->setFlash(
+                        'add-message-success',
+                        true
+                    );
+                }
+            }
+            return $this->refresh();
+        }
+//        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+//            if ($model->sendEmail(Yii::$app->params['adminEmail'])) {
+//                Yii::$app->session->setFlash('success', 'Thank you for contacting us. We will respond to you as soon as possible.');
+//            } else {
+//                Yii::$app->session->setFlash('error', 'There was an error sending your message.');
+//            }
+//
+//            return $this->refresh();
+//        }
+
+        return $this->render('add-message', [
+            'model' => $model,
+        ]);
     }
 
     /**

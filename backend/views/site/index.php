@@ -1,53 +1,94 @@
 <?php
 
 /** @var yii\web\View $this */
+/** @var \yii\data\ActiveDataProvider $dataProvider */
+/** @var \backend\models\AdminMessageSearch $searchModel */
 
-$this->title = 'My Yii Application';
+use yii\grid\GridView;
+use yii\bootstrap5\Html;
+use kartik\date\DatePicker;
+
+$this->title = 'Гостевая книга - Панель управления';
+//echo '<pre>';print_r($dataProvider);die;
+//var_dump(\Yii::$app->user->identity->role);die;
 ?>
 <div class="site-index">
-
-    <div class="jumbotron text-center bg-transparent">
-        <h1 class="display-4">Congratulations!</h1>
-
-        <p class="lead">You have successfully created your Yii-powered application.</p>
-
-        <p><a class="btn btn-lg btn-success" href="http://www.yiiframework.com">Get started with Yii</a></p>
-    </div>
-
     <div class="body-content">
 
-        <div class="row">
-            <div class="col-lg-4">
-                <h2>Heading</h2>
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-outline-secondary" href="http://www.yiiframework.com/doc/">Yii Documentation &raquo;</a></p>
-            </div>
-            <div class="col-lg-4">
-                <h2>Heading</h2>
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-outline-secondary" href="http://www.yiiframework.com/forum/">Yii Forum &raquo;</a></p>
-            </div>
-            <div class="col-lg-4">
-                <h2>Heading</h2>
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-outline-secondary" href="http://www.yiiframework.com/extensions/">Yii Extensions &raquo;</a></p>
-            </div>
-        </div>
+        <?=
+        GridView::widget([
+            'dataProvider' => $dataProvider,
+            'filterModel' => $searchModel,
+            'pager' => [
+                'maxButtonCount' => 8,
+//                    'options' => [
+//                        'tag' => 'ul',
+//                        'class' => 'pagination',
+//                    ],
+                'linkOptions' => ['class' => 'page-link'],
+//                    'activePageCssClass' => 'page-item',
+                'disabledPageCssClass' => 'no-display',
+            ],
+            'columns' => [
+//                ['class' => 'yii\grid\SerialColumn'],
+                [
+                    'attribute' => 'username',
+                    'label' => 'Автор',
+                ],
+                [
+                    'attribute' => 'text',
+                ],
+                [
+                    'attribute' => 'created_at',
+                    'format' => ['date', 'php:Y-m-d h:i:s'],
+                    'filter' => DatePicker::widget([
+                        'model' => $searchModel,
+                        'attribute' => 'created_at_begin',
+                        'attribute2' => 'created_at_end',
+                        'separator' => '-',
+                        'type' => DatePicker::TYPE_RANGE,
+                        'pluginOptions' => [
+                            'format' => 'yyyy-mm-dd',
+                            'todayHighlight' => true,
+                        ],
+                        'options' => ['autocomplete' => 'off'],
+                        'options2' => ['autocomplete' => 'off'],
+                        'language' => 'ru',
+                    ]),
+                ],
+                [
+                    'attribute' => 'updated_at',
+                    'format' => ['date', 'php:Y-m-d']
+                ],
+                [
+                    'attribute' => 'has_approved',
+                    'filter' => ['0' => 'Не опубликовано', '1' => 'Опубликовано'],
+                    'format' => 'raw',
+                    'value' => function ($model, $key, $index, $column) {
+                        /** @var \yii\grid\DataColumn $column */
+                        $value = $model->{$column->attribute};
+                        if (empty($value)) {
+                            $class = 'danger';
+                            $content = 'Не опубликовано';
+                        } else {
+                            $class = 'success';
+                            $content = 'Опубликовано';
+                        }
+                        $html = Html::tag('span', Html::encode($content), ['class' => 'badge bg-' . $class]);
+                        return $value === null ? $column->grid->emptyCell : $html;
+                    }
+                ],
+                [
+                    'class' => 'yii\grid\ActionColumn',
+                    'template' => '{update} {delete}',
+//                    'visibleButtons' => [
+//                        'update' => \Yii::$app->user->can('update'),
+//                        'delete' => \Yii::$app->user->can('delete'),
+//                    ],
+                ],
+            ],
+        ]);
+        ?>
 
     </div>
 </div>

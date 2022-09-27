@@ -2,7 +2,12 @@
 
 namespace backend\controllers;
 
+use backend\models\AdminMessage;
+use backend\models\AdminMessageSearch;
+use backend\models\MessageUpdateForm;
 use common\models\LoginForm;
+use common\models\Message;
+use common\models\User;
 use Yii;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
@@ -31,6 +36,24 @@ class SiteController extends Controller
                         'actions' => ['logout', 'index'],
                         'allow' => true,
                         'roles' => ['@'],
+                    ],
+                    [
+                        'actions' => ['logout', 'index', 'update'],
+                        'allow' => true,
+                        'matchCallback' => function () {
+                            if (!Yii::$app->user->isGuest) {
+                                return Yii::$app->user->identity->role == User::ROLE_MODERATOR;
+                            }
+                        },
+                    ],
+                    [
+                        'actions' => ['logout', 'index', 'update', 'delete'],
+                        'allow' => true,
+                        'matchCallback' => function () {
+                            if (!Yii::$app->user->isGuest) {
+                                return Yii::$app->user->identity->role == User::ROLE_ADMINISTRATOR;
+                            }
+                        },
                     ],
                 ],
             ],
@@ -62,7 +85,32 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $searchModel = new AdminMessageSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        return $this->render('index', [
+            'dataProvider' => $dataProvider,
+            'searchModel' => $searchModel,
+        ]);
+    }
+
+    public function actionUpdate($id)
+    {
+        $message = AdminMessage::findOne($id);
+        $model = new MessageUpdateForm($message);
+
+        if ($model->load(Yii::$app->request->post()) && $model->update()) {
+            return $this->redirect(['index']);
+        } else {
+            return $this->render('message-update', [
+                'model' => $model,
+            ]);
+        }
+    }
+
+    public function actionDelete($id)
+    {
+        die('delete');
     }
 
     /**

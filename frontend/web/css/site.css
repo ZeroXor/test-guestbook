@@ -101,3 +101,19 @@ a.desc:after {
 {
     text-decoration: none;
 }
+
+.no-display {
+    display: none;
+}
+
+.message-list-item > .message-list-item-date {
+    color: #777;
+}
+
+.message-list-item > .message-list-item-user {
+    font-weight: bold;
+}
+
+ul.pagination {
+    margin-top: 20px;
+}

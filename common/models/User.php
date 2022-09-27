@@ -19,6 +19,7 @@ use yii\web\IdentityInterface;
  * @property string $email
  * @property string $auth_key
  * @property integer $status
+ * @property integer $role
  * @property integer $created_at
  * @property integer $updated_at
  * @property string $password write-only password
@@ -28,6 +29,10 @@ class User extends ActiveRecord implements IdentityInterface
     const STATUS_DELETED = 0;
     const STATUS_INACTIVE = 9;
     const STATUS_ACTIVE = 10;
+
+    const ROLE_USER = 10;
+    const ROLE_MODERATOR = 20;
+    const ROLE_ADMINISTRATOR = 30;
 
 
     /**
@@ -56,6 +61,8 @@ class User extends ActiveRecord implements IdentityInterface
         return [
             ['status', 'default', 'value' => self::STATUS_INACTIVE],
             ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_INACTIVE, self::STATUS_DELETED]],
+            ['role', 'default', 'value' => 10],
+            ['role', 'in', 'range' => [self::ROLE_USER, self::ROLE_MODERATOR, self::ROLE_ADMINISTRATOR]],
         ];
     }
 
@@ -209,5 +216,35 @@ class User extends ActiveRecord implements IdentityInterface
     public function removePasswordResetToken()
     {
         $this->password_reset_token = null;
+    }
+
+    /**
+     * @param int $id
+     *
+     * @return bool
+     */
+    public static function isRoleUser(int $id): bool
+    {
+        return (bool)static::findOne(['id' => $id, 'role' => self::ROLE_USER]);
+    }
+
+    /**
+     * @param int $id
+     *
+     * @return bool
+     */
+    public static function isRoleModerator(int $id): bool
+    {
+        return (bool)static::findOne(['id' => $id, 'role' => self::ROLE_MODERATOR]);
+    }
+
+    /**
+     * @param int $id
+     *
+     * @return bool
+     */
+    public static function isRoleAdministrator(int $id): bool
+    {
+        return (bool)static::findOne(['id' => $id, 'role' => self::ROLE_ADMINISTRATOR]);
     }
 }
