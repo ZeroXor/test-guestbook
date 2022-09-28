@@ -7,10 +7,9 @@
 use yii\grid\GridView;
 use yii\bootstrap5\Html;
 use kartik\date\DatePicker;
+use common\models\User;
 
 $this->title = 'Гостевая книга - Панель управления';
-//echo '<pre>';print_r($dataProvider);die;
-//var_dump(\Yii::$app->user->identity->role);die;
 ?>
 <div class="site-index">
     <div class="body-content">
@@ -21,16 +20,10 @@ $this->title = 'Гостевая книга - Панель управления'
             'filterModel' => $searchModel,
             'pager' => [
                 'maxButtonCount' => 8,
-//                    'options' => [
-//                        'tag' => 'ul',
-//                        'class' => 'pagination',
-//                    ],
                 'linkOptions' => ['class' => 'page-link'],
-//                    'activePageCssClass' => 'page-item',
                 'disabledPageCssClass' => 'no-display',
             ],
             'columns' => [
-//                ['class' => 'yii\grid\SerialColumn'],
                 [
                     'attribute' => 'username',
                     'label' => 'Автор',
@@ -81,10 +74,10 @@ $this->title = 'Гостевая книга - Панель управления'
                 [
                     'class' => 'yii\grid\ActionColumn',
                     'template' => '{update} {delete}',
-//                    'visibleButtons' => [
-//                        'update' => \Yii::$app->user->can('update'),
-//                        'delete' => \Yii::$app->user->can('delete'),
-//                    ],
+                    'visibleButtons' => [
+                        'update' => true,
+                        'delete' => User::isRoleAdministrator(Yii::$app->user->identity->id),
+                    ],
                 ],
             ],
         ]);

@@ -94,7 +94,12 @@ class SiteController extends Controller
         ]);
     }
 
-    public function actionUpdate($id)
+    /**
+     * @param int $id
+     *
+     * @return string
+     */
+    public function actionUpdate(int $id): string
     {
         $message = AdminMessage::findOne($id);
         $model = new MessageUpdateForm($message);
@@ -108,9 +113,18 @@ class SiteController extends Controller
         }
     }
 
-    public function actionDelete($id)
+    /**
+     * @param int $id
+     *
+     * @return Response
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public function actionDelete(int $id)
     {
-        die('delete');
+        AdminMessage::findOne($id)->delete();
+
+        return $this->redirect(['index']);
     }
 
     /**

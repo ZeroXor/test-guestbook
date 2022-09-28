@@ -2,6 +2,7 @@
 
 namespace frontend\controllers;
 
+use common\models\ReplyToMessage;
 use frontend\models\AddMessageForm;
 use frontend\models\ResendVerificationEmailForm;
 use frontend\models\VerifyEmailForm;
@@ -85,12 +86,24 @@ class SiteController extends Controller
         ]);
     }
 
+    public function actionView($id)
+    {
+//        $message = Message::findOne($id);
+//        $replies = ReplyToMessage::find(['message_id'])
+//        $modelMessage = new Message();
+//        $dataProvider = $modelMessage->getMessageWithReplies($id);
+//        $modelMessage = new Message();
+
+        return $this->render('view-message', [
+//            'dataProvider' => $modelMessage->getMessagesList(),
+        ]);
+    }
+
     public function actionAddMessage()
     {
         $model = new AddMessageForm();
         if ($model->load(Yii::$app->request->post())) {
             $model->created_at = time();
-//            echo '<pre>';print_r($model);die;
             if (!$model->validate()) {
                 // Данные не прошли валидацию
                 Yii::$app->session->setFlash('error', 'Сообщение не было отправлено.');
@@ -115,15 +128,6 @@ class SiteController extends Controller
             }
             return $this->refresh();
         }
-//        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-//            if ($model->sendEmail(Yii::$app->params['adminEmail'])) {
-//                Yii::$app->session->setFlash('success', 'Thank you for contacting us. We will respond to you as soon as possible.');
-//            } else {
-//                Yii::$app->session->setFlash('error', 'There was an error sending your message.');
-//            }
-//
-//            return $this->refresh();
-//        }
 
         return $this->render('add-message', [
             'model' => $model,

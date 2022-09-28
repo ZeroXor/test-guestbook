@@ -15,20 +15,20 @@ use yii\data\ActiveDataProvider;
  * Message model
  *
  * @property integer $id
- * @property string $username
+ * @property integer $message_id
+ * @property integer $user_id
  * @property string $text
- * @property boolean $has_approved
  * @property integer $created_at
  * @property integer $updated_at
  */
-class Message extends ActiveRecord
+class ReplyToMessage extends ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return '{{%message}}';
+        return '{{%reply_to_message}}';
     }
 
     /**
@@ -48,9 +48,9 @@ class Message extends ActiveRecord
     {
         return [
             [['created_at', 'updated_at'], 'default', 'value' => 0],
-            [['id', 'created_at', 'updated_at'], 'integer'],
+            [['id', 'message_id', 'user_id', 'created_at', 'updated_at'], 'integer'],
             [['username', 'text'], 'string'],
-            ['has_approved', 'boolean'],
+            [['id', 'message_id', 'user_id', 'created_at', 'updated_at'], 'required'],
         ];
     }
 
@@ -60,9 +60,10 @@ class Message extends ActiveRecord
     public function attributeLabels()
     {
         return [
-            'username' => 'Имя',
-            'text' => 'Сообщение',
-            'has_approved' => 'Опубликовано',
+            'id' => 'ID',
+            'message_id' => 'ID сообщения',
+            'user_id' => 'ID пользователя',
+            'text' => 'Ответ',
             'created_at' => 'Дата создания',
             'updated_at' => 'Дата обновления',
         ];
@@ -74,6 +75,46 @@ class Message extends ActiveRecord
     public function getId()
     {
         return $this->getPrimaryKey();
+    }
+
+    /**
+     * @param int $id
+     *
+     * @return ActiveDataProvider
+     */
+    public function getRepliesToMessage(int $id): ActiveDataProvider
+    {
+        $query = ReplyToMessage::find()->where(['message_id' => $id]);
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'sort' => [
+                'defaultOrder' => [
+                    'created_at' => SORT_DESC,
+                ]
+            ],
+        ]);
+
+        return $dataProvider;
+    }
+
+    /**
+     * @param int $id
+     *
+     * @return ActiveDataProvider
+     */
+    public function getRepliesToUser(int $id): ActiveDataProvider
+    {
+        $query = ReplyToMessage::find()->where(['user_id' => $id]);
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'sort' => [
+                'defaultOrder' => [
+                    'created_at' => SORT_DESC,
+                ]
+            ],
+        ]);
+
+        return $dataProvider;
     }
 
     /**
@@ -98,15 +139,8 @@ class Message extends ActiveRecord
         return $dataProvider;
     }
 
-    public function getMessageWithReplies($id)
+    public function getMessages()
     {
-//        $query = Message::find()->where(['has_approved' => 1])->andWhere(['id' => $id]);
-//        $query->joinWith(ReplyToMessage::tableName())->where(['message_id' => $id]);
-        $model = Message::find()->with('reply_to_message')->all();
-    }
-
-    public function getReplyToMessage()
-    {
-        return $this->hasMany(ReplyToMessage::class, ['message_id' => 'id']);
+        return $this->hasOne(Message::class, ['id' => 'message_id']);
     }
 }
